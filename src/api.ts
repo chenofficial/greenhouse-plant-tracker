@@ -2,6 +2,7 @@ import type {
   AppState,
   Plant,
   CreatePlantInput,
+  WaterPlantInput,
   Stats,
   BadgeRecord,
   Watering,
@@ -32,9 +33,9 @@ export const api = {
       body: JSON.stringify(input),
     }),
   deletePlant: (id: string) => request<void>(`/api/plants/${id}`, { method: 'DELETE' }),
-  waterPlant: (id: string) =>
+  waterPlant: (id: string, input: WaterPlantInput = {}) =>
     request<{ plant: Plant; watering: Watering; newBadges: BadgeRecord[] }>(
       `/api/plants/${id}/water`,
-      { method: 'POST' },
+      { method: 'POST', body: JSON.stringify(input) },
     ),
 };

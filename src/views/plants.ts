@@ -48,7 +48,7 @@ export function renderPlants(state: AppState): string {
                   <h4 class="plant-card-name">${escapeHtml(p.name)}</h4>
                   <div class="plant-card-meta">${escapeHtml(p.type)}${p.location ? ` &middot; ${escapeHtml(p.location)}` : ''}</div>
                   <div class="plant-card-schedule">
-                    <span>every ${p.frequency} day${p.frequency !== 1 ? 's' : ''}</span>
+                    <span>every ${p.frequency} day${p.frequency !== 1 ? 's' : ''} &middot; ${p.waterAmountMl}ml</span>
                     <span class="plant-card-since">${p.lastWatered ? `last: ${formatDate(p.lastWatered)}` : 'never watered'}</span>
                   </div>
                   <div class="plant-card-bar">

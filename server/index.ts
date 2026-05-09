@@ -20,7 +20,12 @@ const CreatePlantSchema = z.object({
   name: z.string().trim().min(1).max(80),
   type: z.enum(PLANT_TYPES),
   frequency: z.number().int().min(1).max(365).optional(),
+  waterAmountMl: z.number().int().min(10).max(10000).optional(),
   location: z.string().trim().max(120).optional(),
+});
+
+const WaterPlantSchema = z.object({
+  amountMl: z.number().int().min(1).max(10000).optional(),
 });
 
 const app = express();
@@ -57,7 +62,12 @@ app.delete('/api/plants/:id', (req, res) => {
 });
 
 app.post('/api/plants/:id/water', (req, res) => {
-  const result = recordWatering(req.params.id);
+  const parsed = WaterPlantSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: 'invalid input', issues: parsed.error.issues });
+    return;
+  }
+  const result = recordWatering(req.params.id, parsed.data.amountMl);
   if (!result) {
     res.status(404).json({ error: 'plant not found' });
     return;

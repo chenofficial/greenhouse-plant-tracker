@@ -17,6 +17,7 @@ export interface Plant {
   type: PlantType;
   icon: string;
   frequency: number;
+  waterAmountMl: number;
   location: string;
   lastWatered: string | null;
   createdAt: string;
@@ -27,6 +28,7 @@ export interface Watering {
   plantId: string;
   plantName: string;
   date: string;
+  amountMl: number | null;
   type: 'water';
 }
 
@@ -45,7 +47,12 @@ export interface CreatePlantInput {
   name: string;
   type: PlantType;
   frequency?: number;
+  waterAmountMl?: number;
   location?: string;
+}
+
+export interface WaterPlantInput {
+  amountMl?: number;
 }
 
 export interface BadgeDef {
@@ -65,18 +72,25 @@ export interface Stats {
   badgesEarned: number;
 }
 
-export const PLANT_PRESETS: Record<PlantType, { icon: string; freq: number; light: string }> = {
-  succulent:    { icon: '🪴', freq: 14, light: 'bright indirect' },
-  fern:         { icon: '🌿', freq: 3,  light: 'low to medium' },
-  cactus:       { icon: '🌵', freq: 21, light: 'direct sun' },
-  pothos:       { icon: '🍃', freq: 7,  light: 'low light' },
-  monstera:     { icon: '🌱', freq: 7,  light: 'bright indirect' },
-  'snake plant':{ icon: '🌿', freq: 14, light: 'any' },
-  orchid:       { icon: '🌸', freq: 7,  light: 'bright indirect' },
-  herb:         { icon: '🌾', freq: 2,  light: 'direct sun' },
-  'fiddle leaf':{ icon: '🌳', freq: 7,  light: 'bright indirect' },
-  'peace lily': { icon: '☘️', freq: 5,  light: 'low to medium' },
-  other:        { icon: '🌱', freq: 7,  light: 'varies' },
+export interface PlantPreset {
+  icon: string;
+  freq: number;
+  amountMl: number;
+  light: string;
+}
+
+export const PLANT_PRESETS: Record<PlantType, PlantPreset> = {
+  succulent:    { icon: '🪴', freq: 14, amountMl: 60,  light: 'bright indirect' },
+  fern:         { icon: '🌿', freq: 3,  amountMl: 350, light: 'low to medium' },
+  cactus:       { icon: '🌵', freq: 21, amountMl: 80,  light: 'direct sun' },
+  pothos:       { icon: '🍃', freq: 7,  amountMl: 250, light: 'low light' },
+  monstera:     { icon: '🌱', freq: 7,  amountMl: 500, light: 'bright indirect' },
+  'snake plant':{ icon: '🌿', freq: 14, amountMl: 200, light: 'any' },
+  orchid:       { icon: '🌸', freq: 7,  amountMl: 120, light: 'bright indirect' },
+  herb:         { icon: '🌾', freq: 2,  amountMl: 150, light: 'direct sun' },
+  'fiddle leaf':{ icon: '🌳', freq: 7,  amountMl: 750, light: 'bright indirect' },
+  'peace lily': { icon: '☘️', freq: 5,  amountMl: 400, light: 'low to medium' },
+  other:        { icon: '🌱', freq: 7,  amountMl: 250, light: 'varies' },
 };
 
 export const BADGES: (BadgeDef & { check: (s: Stats) => boolean })[] = [

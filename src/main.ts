@@ -4,10 +4,11 @@ import { renderDashboard } from './views/dashboard.js';
 import { renderPlants } from './views/plants.js';
 import { renderLog } from './views/log.js';
 import { renderBadges } from './views/badges.js';
+import { renderChart } from './views/chart.js';
 import { showAddPlantModal, closeModal } from './modal.js';
 import { showToast, showBadgeToast } from './toast.js';
 
-type View = 'dashboard' | 'plants' | 'log' | 'badges';
+type View = 'dashboard' | 'chart' | 'plants' | 'log' | 'badges';
 
 interface AppStateWithStats {
   state: AppState;
@@ -50,6 +51,7 @@ function render(): void {
 
   switch (view) {
     case 'dashboard': main.innerHTML = renderDashboard(state, stats); break;
+    case 'chart':     main.innerHTML = renderChart(state); break;
     case 'plants':    main.innerHTML = renderPlants(state); break;
     case 'log':       main.innerHTML = renderLog(state); break;
     case 'badges':    main.innerHTML = renderBadges(state, stats); break;
@@ -133,6 +135,7 @@ function bindEvents(): void {
   });
 
   const switches: Record<string, View> = {
+    'switch-chart': 'chart',
     'switch-plants': 'plants',
     'switch-log': 'log',
     'switch-badges': 'badges',

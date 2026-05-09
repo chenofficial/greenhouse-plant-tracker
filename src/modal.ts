@@ -24,9 +24,15 @@ export function showAddPlantModal(onSubmit: (input: CreatePlantInput) => void | 
             ${Object.keys(PLANT_PRESETS).map((k) => `<option value="${k}">${k}</option>`).join('')}
           </select>
         </div>
-        <div class="field">
-          <label class="field-label">watering frequency (days)</label>
-          <input class="field-input" type="number" name="frequency" min="1" max="90" placeholder="7">
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">watering frequency (days)</label>
+            <input class="field-input" type="number" name="frequency" min="1" max="90" placeholder="7">
+          </div>
+          <div class="field">
+            <label class="field-label">water per session (ml)</label>
+            <input class="field-input" type="number" name="waterAmountMl" min="10" max="10000" step="10" placeholder="250">
+          </div>
         </div>
         <div class="field">
           <label class="field-label">location</label>
@@ -43,10 +49,14 @@ export function showAddPlantModal(onSubmit: (input: CreatePlantInput) => void | 
 
   const typeSelect = overlay.querySelector<HTMLSelectElement>('select[name="type"]');
   const freqInput = overlay.querySelector<HTMLInputElement>('input[name="frequency"]');
-  if (typeSelect && freqInput) {
+  const amountInput = overlay.querySelector<HTMLInputElement>('input[name="waterAmountMl"]');
+  if (typeSelect && freqInput && amountInput) {
     typeSelect.addEventListener('change', () => {
       const preset = PLANT_PRESETS[typeSelect.value as PlantType];
-      if (preset) freqInput.placeholder = String(preset.freq);
+      if (preset) {
+        freqInput.placeholder = String(preset.freq);
+        amountInput.placeholder = String(preset.amountMl);
+      }
     });
   }
 
@@ -59,11 +69,14 @@ export function showAddPlantModal(onSubmit: (input: CreatePlantInput) => void | 
     const type = String(fd.get('type') ?? 'other') as PlantType;
     const freqRaw = fd.get('frequency');
     const frequency = freqRaw ? parseInt(String(freqRaw), 10) : undefined;
+    const amountRaw = fd.get('waterAmountMl');
+    const waterAmountMl = amountRaw ? parseInt(String(amountRaw), 10) : undefined;
     const location = String(fd.get('location') ?? '').trim();
     await onSubmit({
       name,
       type,
       frequency: Number.isFinite(frequency) ? frequency : undefined,
+      waterAmountMl: Number.isFinite(waterAmountMl) ? waterAmountMl : undefined,
       location: location || undefined,
     });
   });

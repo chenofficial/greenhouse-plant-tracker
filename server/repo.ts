@@ -8,6 +8,7 @@ interface PlantRow {
   type: PlantType;
   icon: string;
   frequency: number;
+  water_amount_ml: number;
   location: string;
   last_watered: string | null;
   created_at: string;
@@ -18,6 +19,7 @@ interface WateringRow {
   plant_id: string;
   plant_name: string;
   date: string;
+  amount_ml: number | null;
 }
 
 interface BadgeRow {
@@ -31,6 +33,7 @@ const rowToPlant = (r: PlantRow): Plant => ({
   type: r.type,
   icon: r.icon,
   frequency: r.frequency,
+  waterAmountMl: r.water_amount_ml,
   location: r.location,
   lastWatered: r.last_watered,
   createdAt: r.created_at,
@@ -41,6 +44,7 @@ const rowToWatering = (r: WateringRow): Watering => ({
   plantId: r.plant_id,
   plantName: r.plant_name,
   date: r.date,
+  amountMl: r.amount_ml,
   type: 'water',
 });
 
@@ -63,6 +67,7 @@ export function createPlant(input: {
   name: string;
   type: PlantType;
   frequency?: number;
+  waterAmountMl?: number;
   location?: string;
 }): Plant {
   const preset = PLANT_PRESETS[input.type] ?? PLANT_PRESETS.other;
@@ -72,14 +77,15 @@ export function createPlant(input: {
     type: input.type,
     icon: preset.icon,
     frequency: input.frequency ?? preset.freq,
+    waterAmountMl: input.waterAmountMl ?? preset.amountMl,
     location: input.location ?? '',
     lastWatered: null,
     createdAt: new Date().toISOString(),
   };
 
   db.prepare(`
-    INSERT INTO plants (id, name, type, icon, frequency, location, last_watered, created_at)
-    VALUES (@id, @name, @type, @icon, @frequency, @location, @lastWatered, @createdAt)
+    INSERT INTO plants (id, name, type, icon, frequency, water_amount_ml, location, last_watered, created_at)
+    VALUES (@id, @name, @type, @icon, @frequency, @waterAmountMl, @location, @lastWatered, @createdAt)
   `).run(plant);
 
   return plant;
@@ -92,7 +98,7 @@ export function deletePlant(id: string): boolean {
 
 export function getAllWaterings(): Watering[] {
   const rows = db.prepare(`
-    SELECT w.id, w.plant_id, w.date, p.name AS plant_name
+    SELECT w.id, w.plant_id, w.date, w.amount_ml, p.name AS plant_name
     FROM waterings w
     JOIN plants p ON p.id = w.plant_id
     ORDER BY w.date DESC, w.id DESC
@@ -100,15 +106,21 @@ export function getAllWaterings(): Watering[] {
   return rows.map(rowToWatering);
 }
 
-export function recordWatering(plantId: string): { plant: Plant; watering: Watering } | null {
+export function recordWatering(
+  plantId: string,
+  amountMl?: number,
+): { plant: Plant; watering: Watering } | null {
   const plant = getPlant(plantId);
   if (!plant) return null;
 
   const now = new Date().toISOString();
   const today = now.slice(0, 10);
+  const recordedAmount = amountMl ?? null;
 
   const tx = db.transaction(() => {
-    const result = db.prepare('INSERT INTO waterings (plant_id, date) VALUES (?, ?)').run(plantId, now);
+    const result = db
+      .prepare('INSERT INTO waterings (plant_id, date, amount_ml) VALUES (?, ?, ?)')
+      .run(plantId, now, recordedAmount);
     db.prepare('UPDATE plants SET last_watered = ? WHERE id = ?').run(today, plantId);
     return result.lastInsertRowid as number;
   });
@@ -117,7 +129,14 @@ export function recordWatering(plantId: string): { plant: Plant; watering: Water
 
   return {
     plant: { ...plant, lastWatered: today },
-    watering: { id, plantId, plantName: plant.name, date: now, type: 'water' },
+    watering: {
+      id,
+      plantId,
+      plantName: plant.name,
+      date: now,
+      amountMl: recordedAmount,
+      type: 'water',
+    },
   };
 }
 
